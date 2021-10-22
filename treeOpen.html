@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>展开树</title>
+	<style type="text/css">
+		.contain {
+			height: 100vh;
+			display: flex;
+			justify-content: start;
+			align-item: center;
+		}
+		.treeBox {
+			display: flex;
+			align-items: center;
+			position: relactive;
+		}
+		
+		.item {
+			width: 180px;
+			min-height: 60px;
+			padding: 0 10px;
+			box-shadow: 0 0 10px #ccc;
+			position: relative;
+			background-color: #caf153;
+			border-radius: 10px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+		.children > .treeBox {
+			border-radius: 10px;
+			position: relative;
+		}
+		.children > .treeBox + .treeBox {
+			margin-top:  20px;
+		}
+		.children > .treeBox:before {
+			width:  22px;
+			height: 2px;
+			background-color: #dcdcdc;
+			position: absolute;
+			top: 50%;
+			left: -22px;
+			transform: translateY(-50%);
+			display: inline-block;
+			content: " ";
+		}
+		/*.children > .treeBox:first-child {
+			margin-top: -30px;
+		}
+		.children > .treeBox:last-child {
+			margin-bottom: -30px;
+		}*/
+		.treeBox > .children:before {
+			width:  20px;
+			height: 2px;
+			background-color: #dcdcdc;
+			position: absolute;
+			top: 50%;
+			left: -22px;
+			transform: translateY(-50%);
+			display: inline-block;
+			content: " ";
+		}
+		.item > .add,.delete {
+			font-size: 30px;
+			font-weight: 600;
+			color: yellow;
+			cursor: pointer;
+		}
+		.item > .delete:hover{
+			color: cyan;
+		}
+		.item > .add:hover{
+			color: cyan;
+		}
+		.treeBox .children {
+			display: flex;
+			flex-direction: column;
+			margin: 20px;
+			margin-left: 20px;
+			padding-left: 20px;
+			padding-left: 20px;
+			border-left: 2px solid #dcdcdc;
+			position: relative;
+		}
+	</style>
+</head>
+<body>
+	<section class="contain">
+		<div class="treeBox">
+			<div class="item">
+				<div class="delete"></div>
+				<div class="add" onclick="add(this)">+</div>
+			</div>
+		</div>
+	</section>
+</body>
+<script type="text/javascript">
+	function add(that) {
+		// console.log('当前获取',that)
+		// console.log(window.event.target)
+		let currentElement = window.event.target
+		// console.log(currentElement.parentNode)
+		// console.log(currentElement.parentElement)
+		let fatherTreeBox = currentElement.parentNode.parentNode
+		let childrenDom = fatherTreeBox.querySelector('.children')
+		// add 是add给兄弟childen添加
+		if(childrenDom) {
+			console.log('已经含有children', childrenDom)
+			let str = childrenDom.innerHTML;
+			str += `<div class="treeBox">
+				<div class="item">
+					<div class="delete" onclick="deleteFn()">-</div>
+					<div class="add" onclick="add()">+</div>
+				</div>
+			</div>`;
+			childrenDom.innerHTML = str
+		} else {
+			let str = fatherTreeBox.innerHTML;
+			str += `<div class="children">
+				<div class="treeBox">
+					<div class="item">
+						<div class="delete" onclick="deleteFn()">-</div>
+						<div class="add" onclick="add()">+</div>
+					</div>
+				</div>
+			</div>`;
+			fatherTreeBox.innerHTML = str
+		}
+	}
+	function deleteFn() {
+		let currentElement = window.event.target
+		let fatherTreeBox = currentElement.parentNode.parentNode;
+		let boxNode = fatherTreeBox.parentNode;
+		boxNode.removeChild(fatherTreeBox);
+		if(boxNode.children.length == 0) {
+			let rootNode = boxNode.parentNode;
+			rootNode.removeChild(boxNode)
+		}
+	}
+</script>
+</html>

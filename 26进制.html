@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+</head>
+<body>
+<script type="text/javascript">
+	let WordTable = []; // 字符表
+
+	function initWord() {
+      // 数字，字母对照表，1 - 26 对应 A - Z
+      WordTable = ["", "A", "B"]
+      for (let i = 65; i <= 90; i++) {
+        let words = String.fromCharCode(i)
+        WordTable[i - 64] = words
+      }
+    }
+
+    initWord();
+    // A-Z 表格进制转换:注意是 0 - 25， 25是Z,26是AA； 
+    function conversionProcess(index, process = 26) {
+      let digital = []
+      let No = index + 1
+      const digitalFn = (i) => {
+      	// y 是每个位数对应的值，不断取余，然后对照到字符表
+        let y = i % process != 0 ? i % process : 26;
+        // 取出该进制下对应表达字符
+        digital.unshift(WordTable[y])
+        let Quotient = (i - y) / process
+        return (Quotient > 0) ? digitalFn(Quotient) : digital;
+      }
+      let result = digitalFn(No);
+      return result
+    }
+    
+    console.log(conversionProcess(25))
+
+	// 模拟十六进制
+    let processWordTable = [0, 1,2,3,4,5,6,7,8,9,'A',"B","C","D","E","F"]
+    // process：多少进制； processWordTable：决定该进制每个数值具体表达什么字符的，字符表
+    function processTranslate(o, process) {
+      	// 位数数组
+      	let digital = []
+      	const digitalFn = (i) => {
+      		// y 是每个位数对应的值，不断取余，然后对照到字符表
+        	let y = i % process;
+        	// 取出该进制下对应表达字符
+        	digital.unshift(processWordTable[y])
+        	let Quotient = (i - y) / process
+        	return (Quotient > 0) ? digitalFn(Quotient) : digital;
+      	}
+      	let result = digitalFn(o);
+      	return result
+    }
+    console.log('十进制转', processTranslate(88, 16))
+</script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>折现</title>
+</head>
+<body>
+<input id="inp" type="" name="">
+<canvas id="canvas" width="800" height="500" style="border: 1px solid gray;background-color: transparent;"></canvas>
+</body>
+<script type="text/javascript">
+
+	var Arr = [261, 432, 145, 233, 213, 322, 13]
+	var inp = document.getElementById('inp')
+	var c = document.getElementById('canvas')
+	var ctx = c.getContext("2d")
+
+	var baseline = c.height / 2 // 折线图基线
+	let padding = 50 // 间距
+
+	inp.oninput = function () {
+		try {
+			if (JSON.parse(this.value) instanceof Array) {
+				let _arr = JSON.parse(JSON.stringify(this.value))
+				console.log('数组了！！', _arr)
+				console.log([].slice(_arr))
+				setTimeout(e => render(JSON.parse(_arr)),0)
+			}
+		} catch (e) {
+			console.log('做个人吧，输入正确数组格式好吗')
+		}
+	}
+
+	function Point (x, y, i, color, r) {
+		this.x = x * (i + 1)
+		this.y = y
+		this.r = r || 2
+		this.i = i
+		this.color = color || 'red'
+	}
+	Point.prototype.render = function(len) {
+		console.log(this.x, this.y)
+		ctx.lineTo(this.x, this.y)
+		ctx.strokeStyle = this.color
+		ctx.arc(this.x,this.y,this.r,Math.PI*2,0,true)
+	};
+
+	function render (arg) {
+		var arr = arg || Arr
+		ctx.clearRect(0, 0, c.width, c.height)
+		ctx.beginPath()
+		ctx.moveTo(0,baseline); 
+		ctx.lineTo(c.width,baseline);  
+		ctx.strokeStyle = "black";
+		ctx.stroke();
+
+		ctx.beginPath()
+		ctx.moveTo(10, baseline);
+		ctx.arc(10,baseline,2,Math.PI*2,0,true);
+		for (var i = 0; i < arr.length; i++) {
+			console.log('第', i, '个')
+			let val = baseline - arr[i]
+			let po = new Point(50, arr[i], i)
+			po.render(arr.length)
+		}
+		ctx.stroke();
+	}
+	render()
+</script>
+</html>
