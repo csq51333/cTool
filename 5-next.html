@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>下一步</title>
+	<style>
+		.head{
+			width: 100px;
+			height: 100px;
+			background-color: red;
+			color: white;
+		}
+		.menu{
+			margin-left: 100px;
+			position: relative;
+		}
+		.menu-item{
+			width: 100px;
+			height: 30px;
+			background-color: cyan;
+			border: 1px solid red;
+			text-align: center;
+			color: white;
+		}
+		.pop{
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0,0,0,.5);
+		}
+		.pop-box{
+			padding: 5px;
+			position: absolute;
+			width: 100px;
+			height: 50px;
+			background-color: white;
+		}
+	</style>
+</head>
+<body>
+	<div class="wrap">
+		<div class="head" next="1" setp='内容000'>logo</div>
+		<div class="menu">
+			<div class="menu-item" next="3" setp='内容1'>撒旦飞洒</div>
+			<div class="menu-item">dsad</div>
+			<div class="menu-item" next="2" setp='内容222'>adsa</div>
+		</div>
+	</div>
+	<div class="pop">
+		<div class="pop-master"></div>
+		<div class="pop-box">
+			<div class="pop-title">标题</div>
+			<div class="pop-content"></div>
+			<button onclick="next()">下一步</button>
+		</div>
+	</div>
+</body>
+<script>
+var box = document.querySelector('.wrap')
+var pop = document.querySelector('.pop')
+var popBox = document.querySelector('.pop-box')
+var popTitle = document.querySelector('.pop-title')
+var popContent = document.querySelector('.pop-content')
+var popM = document.querySelector('.pop-master')
+
+let step = []
+let currPoint = 0
+complier(box)
+function complier(dom) {
+	let arr = [].slice.call(dom.children)
+	for (let i = 0; i < arr.length; i++) {
+		if (arr[i].attributes['next']) {
+			let newDom = arr[i].cloneNode(true)
+			newDom.style.position = 'absolute'
+			newDom.style.top = offset(arr[i]).top + 'px'
+			newDom.style.left = offset(arr[i]).left + 'px'
+			let item = {
+				ele: newDom,
+				eles: arr[i],
+				setpNum: arr[i].attributes['next'].value,
+				content: arr[i].attributes['setp'].value
+			}
+			step.push(item)
+			// pop.appendChild(newDom)
+		}
+		if (arr[i].children && arr[i].children.length) {
+			arguments.callee(arr[i])
+		}
+	}
+}
+
+function offset(dom){
+	let top = parseInt(dom.offsetTop)
+	let left = parseInt(dom.offsetLeft)
+	if (dom.offsetParent){
+		let obj = arguments.callee(dom.offsetParent)
+		top += obj.top
+		left += obj.left
+	}
+	return {left, top}
+}
+
+function isLeftOrTop (doms) {
+	let dom = doms.eles
+	let height = doms.eles.getBoundingClientRect().height
+	let w = dom.getBoundingClientRect().width
+	let h = 0
+	let top = offset(doms.ele).top
+	let left = offset(doms.ele).left
+	if (top < 300) {
+		h = height / 2 - 25
+	}
+	popBox.style.top = top + h + 'px'
+	popBox.style.left = left + w + 'px'
+	console.log(dom.getBoundingClientRect())
+}
+
+function next(){
+	let item = step.find(function(item, i){
+		if (parseInt(item.setpNum) != currPoint) {
+			return false
+		}
+		return true
+	})
+	debugger
+	if (item && item.eles) {
+		popM.firstChild && popM.removeChild(popM.firstChild)
+		popM.appendChild(item.ele)
+		// 判断上下左右函数晚点再说
+		isLeftOrTop(item)
+		popContent.innerHTML = item.content
+		popTitle.innerHTML = '第' + item.setpNum + '步'
+	}
+	currPoint++
+}
+next()
+</script>
+</html>

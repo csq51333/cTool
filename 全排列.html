@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>全排列</title>
+</head>
+<body>
+	预览
+<a href="http://www.xdocin.com/xdoc?_func=to&amp;_format=html&amp;_cache=1&amp;_xdoc=http://www.xdocin.com/demo/demo.docx" target="_blank" rel="nofollow">XDOC</a>
+
+<a id="pdf" target="_blank" href="http://storage.xuetangx.com/public_assets/xuetangx/PDF/PlayerAPI_v1.0.6.pdf">pdf</a>
+
+<a id="pdf" target="_blank" href="http://storage.xuetangx.com/public_assets/xuetangx/PDF/1.xls">xls</a>
+
+<!-- <embed src="http://storage.xuetangx.com/public_assets/xuetangx/PDF/PlayerAPI_v1.0.6.pdf" type="application/pdf" width="100%" height="100%"> -->
+
+	<embed src="http://storage.xuetangx.com/public_assets/xuetangx/PDF/1.xls" width="100%" height="100%">
+
+<iframe src='https://view.officeapps.live.com/op/view.aspx?src=http://storage.xuetangx.com/public_assets/xuetangx/PDF/1.xls' width='100%' height='100%' frameborder='1'>
+            </iframe>
+
+<!-- <object src="http://storage.xuetangx.com/public_assets/xuetangx/PDF/PlayerAPI_v1.0.6.pdf" type="application/pdf" width="100%" height="100%">
+This browser does not support PDFs. Please download the PDF to view it: <a :href="previewUrl">Download PDF</a>
+</object> -->
+</body>
+<script type="text/javascript">
+	window.open('http://storage.xuetangx.com/public_assets/xuetangx/PDF/PlayerAPI_v1.0.6.pdf')
+	setTimeout(function(){
+		document.getElementById('pdf').click()
+	}, 1000)
+	var arr = [[1,2,3],['a','b','c'],['A','B','C']]
+	function quan(arr) {
+		var nrr = []
+		for(var i=0;i<arr.length;i++){
+			var arr2 = []
+			for(var j=0;j<arr[i].length;j++){
+				var arr3 = []
+				for(var n=0;n<arr.length;n++){
+					arr3.push(arr[n][j])
+				}
+				nrr.push(arr3)
+			}
+		}
+		return nrr
+	}
+
+	function quan2(arr){
+		var zrr = []
+		for(var k=0;k<arr.length;k++){
+			for(var i=0;i<arr[0].length;i++){
+				zrr[k].push(arr[k][i])
+			}
+		}
+	}
+	console.log(quan(arr))
+
+	var a = [[1,4],[1,5],[1,6],[2,4],[2,5],[2,6],[3,4],[3,5],[3,6]],b = [7,8,9]
+	var arrs = []
+	for (var i=0;i<a.length;i++){
+		for(var j=0;j<b.length;j++){
+			var ar = JSON.parse(JSON.stringify(a[i]))
+			ar.push(b[j])
+			arrs.push(ar)
+		}
+	}
+	
+	console.log(arrs)
+
+	function quanpailie(arr){
+		var n = 1,currentArr = []
+		for (var s=0;s<arr[0].length;s++){
+			currentArr.push([arr[0][s]])
+		}
+		function pai(currentArr, n){
+			if(n <= arr.length){
+				var arrs = []
+				var nextArr = arr[n]
+				for (var i=0;i<currentArr.length;i++){
+					for(var j=0;j<nextArr.length;j++){
+						var newArr = JSON.parse(JSON.stringify(currentArr[i]))
+						newArr.push(nextArr[j])
+						arrs.push(newArr)
+					}
+				}
+				currentArr = arrs
+				n++
+				if (n < arr.length) {
+					return pai (currentArr, n)
+				} else {
+					return currentArr
+				}
+
+			} else {
+				return currentArr
+			}
+		}
+
+		var result = pai(currentArr, n)
+		return JSON.stringify(result)
+	}
+	console.log(quanpailie(arr))
+</script>
+</html>
