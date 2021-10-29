@@ -17,12 +17,12 @@
 		}
 		
 		.item {
-			width: 180px;
+			width: 280px;
 			min-height: 60px;
 			padding: 0 10px;
 			box-shadow: 0 0 10px #ccc;
 			position: relative;
-			background-color: #caf153;
+			background-color: #90EE90;
 			border-radius: 10px;
 			display: flex;
 			justify-content: space-between;
@@ -63,11 +63,25 @@
 			display: inline-block;
 			content: " ";
 		}
-		.item > .add,.delete {
+		.item > .content {
+			width:  calc(100% - 70px);
+			padding: 16px 0;
+			font-size: 14px;
+			color: #00BFFF;
+			outline: none
+		}
+		.item > .btn {
+			width: 24px;
+			text-align: center;
 			font-size: 30px;
 			font-weight: 600;
-			color: yellow;
 			cursor: pointer;
+		}
+		.item > .delete {
+			color: #FFF;
+		}
+		.item > .add {
+			color: #FFFF00;
 		}
 		.item > .delete:hover{
 			color: cyan;
@@ -90,9 +104,10 @@
 <body>
 	<section class="contain">
 		<div class="treeBox">
-			<div class="item">
-				<div class="delete"></div>
-				<div class="add" onclick="add(this)">+</div>
+			<div class="item" >
+				<div class="btn delete"></div>
+				<div class="content" contenteditable="true"></div>
+				<div class="btn add" onclick="add(this)">+</div>
 			</div>
 		</div>
 	</section>
@@ -107,38 +122,39 @@
 		let fatherTreeBox = currentElement.parentNode.parentNode
 		let childrenDom = fatherTreeBox.querySelector('.children')
 		// add 是add给兄弟childen添加
+		let createDomStr = `<div class="treeBox">
+			<div class="item">
+				<div class="btn delete" onclick="deleteFn()">-</div>
+				<div class="content" contenteditable="true"></div>
+				<div class="btn add" onclick="add()">+</div>
+			</div>
+		</div>`
 		if(childrenDom) {
 			console.log('已经含有children', childrenDom)
 			let str = childrenDom.innerHTML;
-			str += `<div class="treeBox">
-				<div class="item">
-					<div class="delete" onclick="deleteFn()">-</div>
-					<div class="add" onclick="add()">+</div>
-				</div>
-			</div>`;
+			str += createDomStr;
 			childrenDom.innerHTML = str
 		} else {
 			let str = fatherTreeBox.innerHTML;
 			str += `<div class="children">
-				<div class="treeBox">
-					<div class="item">
-						<div class="delete" onclick="deleteFn()">-</div>
-						<div class="add" onclick="add()">+</div>
-					</div>
-				</div>
+				${createDomStr}
 			</div>`;
 			fatherTreeBox.innerHTML = str
 		}
 	}
 	function deleteFn() {
-		let currentElement = window.event.target
-		let fatherTreeBox = currentElement.parentNode.parentNode;
-		let boxNode = fatherTreeBox.parentNode;
-		boxNode.removeChild(fatherTreeBox);
-		if(boxNode.children.length == 0) {
-			let rootNode = boxNode.parentNode;
-			rootNode.removeChild(boxNode)
+		let isDelete = confirm('确认删除吗')
+		if(isDelete) {
+			let currentElement = window.event.target
+			let fatherTreeBox = currentElement.parentNode.parentNode;
+			let boxNode = fatherTreeBox.parentNode;
+			boxNode.removeChild(fatherTreeBox);
+			if(boxNode.children.length == 0) {
+				let rootNode = boxNode.parentNode;
+				rootNode.removeChild(boxNode)
+			}
 		}
+		console.log('执行时间')
 	}
 </script>
 </html>
