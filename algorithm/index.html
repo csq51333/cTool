@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>算法</title>
+	<style type="text/css">
+		html,body{
+			height: 100%;
+			margin: 0;
+			box-sizing: border-box;
+			overflow: auto;
+		}
+		*::-webkit-scrollbar {
+			width: 4px;
+			background-color: #eee;
+			border-radius: 4px;
+		}
+		*::-webkit-scrollbar-thumb{
+			width: 4px;
+			height: 10%;
+			background-color: #ccc;
+			border-radius: 4px;
+		}
+		.wrap {
+			padding: 8px;
+		}
+		#show-list{
+			height: 80%;
+			overflow: auto;
+		}
+		#show-list li{
+			width: 50%;
+			margin-top: 8px;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			background-color: green;
+			color: white;
+			cursor:  pointer;
+			border-radius: 4px;
+			padding: 8px;
+		}
+		#show-list li:hover{
+			background-color: cyan;
+		}
+		.popover-wrap {
+			display: none;
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			z-index: 2000;
+			background-color: rgba(0,0,0, .7);
+		}
+		.popover-content {
+			position: absolute;
+			padding: 20px;
+			height: 80%;
+			width: 80%;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			background-color: wheat;
+			border-radius: 1%;
+			overflow-y: auto;
+			white-space: pre-wrap;
+		}
+	</style>
+</head>
+<body>
+	<div class="wrap">
+		<div class="app">
+			<header>
+				<section id="arg-input-line">
+					<div id="form">
+						<input type="number" name="target">
+						<input type="text" name="arr">
+					</div>
+					
+				</section>
+				<section id="desc-line"></section>
+				<section id="arg-output-line"></section>
+			</header>
+			<main>
+				<p>点击开始测试，长按展示算法</p>
+				<ul id="show-list"></ul>
+			</main>
+			<div id="popover" class="popover-wrap">
+				<div id="popover-content" class="popover-content"></div>
+			</div>
+		</div>
+	</div>
+<script type="text/javascript" src="./js/core.js"></script>
+<script type="text/javascript">
+	let globalItem = {};
+	let timer = null;
+	init();
+
+	function getDom(str) {
+		return document.getElementById(str)
+	}
+	
+	function init() {
+		let domStr = "";
+		console.log('module', modules)
+		modules.forEach((item, index) => {
+			domStr += `<li class="list-item" onclick='handleClick(${index})' onmousedown='handleMouseOver(this,${index})' onmouseup="handleMouseLeave(this,${index})">${item.name}</li>`
+		})
+		if(modules.length <= 0) {
+			domStr = `<li>暂无内容</li>`
+		}
+		getDom('show-list').innerHTML = domStr;
+		getDom('popover').onclick = function() {
+			this.style.display = 'none'
+		}
+	}
+
+	function handleClick(index) {
+		globalItem = modules[index]
+		console.log('item',globalItem)
+
+		let {name, needArg} = globalItem
+
+		let domStr = ""
+		// 渲染列表展示栏
+		needArg.forEach((item, index) => {
+			domStr += `${item.name}:<input type="text" name="${item.name}"></br>`
+		})
+		domStr != "" && (domStr += `<button onclick="handleSubmit()">提交</button>`)
+		getDom('form').innerHTML = domStr;
+		getDom('desc-line').innerHTML = `
+		<p>${globalItem.des}</p>
+		<p>${globalItem.example}</p>
+		
+		`;
+	}
+	function handleSubmit() {
+		let {name, needArg} = globalItem
+		let params = {}
+		// 渲染参数输入栏
+		getDom('form').querySelectorAll('input').forEach(item => {
+			params[item.name] = item.value
+		})
+		let argPosition = []
+		console.log('form-submit', params)
+		let isVateil = true
+		let arg = []
+		// 解析参数
+		needArg.forEach(item => {
+			try{
+				let result = typeof(item.type()) == 'object' ? eval(params[item.name]) : item.type(params[item.name]);
+				arg.push(result)
+			} catch(e) {
+				isVateil = false
+				alert(`${item.name}：格式有误`)
+			}
+		})
+		// isVateil && alert(JSON.stringify(globalItem.fn.apply(null, arg)))
+		if(isVateil) {
+			getDom('arg-output-line').innerHTML = `输出
+			${JSON.stringify(globalItem.fn.apply(null, arg))}`;
+		}
+	}
+	function handleMouseOver(event,index) {
+		let i = 0;
+		timer = setInterval( () => {
+			console.log('i', i)
+			if(i >= 1) {
+				clearInterval(timer);
+				console.log(event.getBoundingClientRect())
+				const item = modules[index]
+				getDom('popover').style.display = 'block';
+				getDom('popover-content').innerText = `解体思路：${item.thinking}
+实现算法： ${item.fn?.valueOf()}`
+			}
+			i++
+		}, 100)
+		
+	}
+	function handleMouseLeave() {
+		clearInterval(timer);
+		// getDom('popover').style.display = 'none'
+	}
+</script>
+</body>
+</html>
