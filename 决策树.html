@@ -166,6 +166,250 @@ console.log('Accuracy:', accuracy);
 // 在这个示例中，我们使用了上面实现的DecisionTree类，使用数据集的特征、目标变量和特征列表来创建一个决策树，并使用buildTree方法训练该模型。然后，我们使用predict方法对测试集进行预测，并计算准确率。
 
 // 需要注意的是，这里的准确率仅是一个简单的指标，实际上在医疗领域中，需要更加详细和全面的指标来评估模型的性能，例如召回率、精确率和F1值等指标。
+
+
+
+
+
+
+
+//--------------以下是重新让chatGPT生成了注释版决策树-----------
+
+/**
+ * 决策树节点类
+ */
+class Node {
+  /**
+   * 构造函数
+   * @param {Object} data 节点数据，包括特征名称、特征值、样本列表和子节点列表
+   */
+  constructor(data) {
+    this.feature = data.feature; // 特征名称
+    this.value = data.value; // 特征值
+    this.samples = data.samples; // 样本列表
+    this.children = data.children || []; // 子节点列表
+  }
+
+  /**
+   * 添加子节点
+   * @param {Node} child 子节点
+   */
+  addChild(child) {
+    this.children.push(child);
+  }
+}
+
+/**
+ * 决策树类
+ */
+class DecisionTree {
+  /**
+   * 构造函数
+   * @param {Array} data 数据集，包括特征和目标变量
+   * @param {string} target 目标变量名称
+   * @param {Array} features 特征列表
+   * @param {number} minSamplesSplit 最小样本数，小于该值时不再分裂节点
+   * @param {number} maxDepth 最大深度，达到该深度时停止分裂节点
+   */
+  constructor(data, target, features, minSamplesSplit = 2, maxDepth = Infinity) {
+    this.data = data;
+    this.target = target;
+    this.features = features;
+    this.minSamplesSplit = minSamplesSplit;
+    this.maxDepth = maxDepth;
+    this.root = null; // 根节点
+  }
+
+  /**
+   * 计算基尼不纯度
+   * @param {Array} samples 样本列表
+   * @param {string} target 目标变量名称
+   * @returns {number} 基尼不纯度
+   */
+  _calcGini(samples, target) {
+    const classCounts = {};
+    for (const sample of samples) {
+      const label = sample[target];
+      if (label in classCounts) {
+        classCounts[label]++;
+      } else {
+        classCounts[label] = 1;
+      }
+    }
+    let gini = 1;
+    for (const label in classCounts) {
+      const probability = classCounts[label] / samples.length;
+      gini -= probability ** 2;
+    }
+    return gini;
+  }
+
+  /**
+   * 划分数据集
+   * @param {Array} samples 样本列表
+   * @param {string} feature 特征名称
+   * @param {any} value 特征值
+   * @returns {Array} 划分后的两个子集
+   */
+  _splitData(samples, feature, value) {
+    const left = [];
+    const right = [];
+    for (const sample of samples) {
+      if (sample[feature] === value) {
+        left.push(sample);
+      } else {
+        right.push(sample);
+      }
+    }
+    return [left, right];
+  }
+
+  /**
+ * 计算划分后的基尼不纯度
+ * @param {Array} left 左子集样本列表
+ * @param {Array} right 右子集样本列表
+ * @param {string} target 目标变量名称
+ * @returns {number} 划分后的基尼不纯度
+ */
+  _calcSplitGini(left, right, target) {
+    const n = left.length + right.length;
+    const leftGini = this._calcGini(left, target);
+    const rightGini = this._calcGini(right, target);
+    return (left.length / n) * leftGini + (right.length / n) * rightGini;
+  }
+
+  /**
+   * 选择最佳划分特征和特征值
+   * @param {Array} samples 样本列表
+   * @param {Array} features 特征列表
+   * @param {string} target 目标变量名称
+   * @returns {Object} 最佳划分特征和特征值
+   */
+  _chooseBestSplit(samples, features, target) {
+    let bestFeature = null;
+    let bestValue = null;
+    let bestGini = Infinity;
+    for (const feature of features) {
+      const featureValues = new Set(samples.map((sample) => sample[feature]));
+      for (const value of featureValues) {
+        const [left, right] = this._splitData(samples, feature, value);
+        if (left.length >= this.minSamplesSplit && right.length >= this.minSamplesSplit) {
+          const gini = this._calcSplitGini(left, right, target);
+          if (gini < bestGini) {
+            bestFeature = feature;
+            bestValue = value;
+            bestGini = gini;
+          }
+        }
+      }
+    }
+    return { feature: bestFeature, value: bestValue };
+  }
+
+  /**
+   * 构建决策树
+   * @param {Node} node 当前节点
+   * @param {number} depth 当前深度
+   */
+  _buildTree(node, depth) {
+    const samples = node.samples;
+    const targetValues = new Set(samples.map((sample) => sample[this.target]));
+    // 如果所有样本的目标变量相同，则不再分裂节点，将当前节点作为叶子节点
+    if (targetValues.size === 1) {
+      node.label = samples[0][this.target];
+      return;
+    }
+        // 如果特征列表非空，选择最佳划分特征和特征值，并按照最佳划分特征和特征值分裂节点，递归构建子树
+    const { feature, value } = this._chooseBestSplit(samples, this.features, this.target);
+    if (!feature) {
+      const classCounts = {};
+      for (const sample of samples) {
+        const label = sample[this.target];
+        if (label in classCounts) {
+          classCounts[label]++;
+        } else {
+          classCounts[label] = 1;
+        }
+      }
+      let maxCount = -Infinity;
+      for (const label in classCounts) {
+        if (classCounts[label] > maxCount) {
+          maxCount = classCounts[label];
+          node.label = label;
+        }
+      }
+      return;
+    }
+    const [left, right] = this._splitData(samples, feature, value);
+    node.feature = feature;
+    node.value = value;
+    node.left = new Node(left);
+    node.right = new Node(right);
+    this.features = this.features.filter((f) => f !== feature);
+    this._buildTree(node.left, depth + 1);
+    this._buildTree(node.right, depth + 1);
+  }
+
+  /**
+   * 预测单个样本的标签
+   * @param {Object} sample 样本
+   * @param {Node} node 当前节点
+   * @returns {string} 标签
+   */
+  _predictSample(sample, node) {
+    if (node.label !== null) {
+      return node.label;
+    }
+    if (sample[node.feature] < node.value) {
+      return this._predictSample(sample, node.left);
+    } else {
+      return this._predictSample(sample, node.right);
+    }
+  }
+
+  /**
+   * 预测多个样本的标签
+   * @param {Array} samples 样本列表
+   * @returns {Array} 标签列表
+   */
+  predict(samples) {
+    return samples.map((sample) => this._predictSample(sample, this.root));
+  }
+}
+
+/**
+ * 决策树节点类
+ */
+class Node {
+  constructor(samples) {
+    this.samples = samples; // 节点所包含的样本列表
+    this.feature = null; // 分裂特征名称
+    this.value = null; // 分裂特征值
+    this.left = null; // 左子树
+    this.right = null; // 右子树
+    this.label = null; // 叶子节点的标签
+  }
+}
+
+// 示例用法
+const data = [
+  { age: 20, gender: 'male', label: 'A' },
+  { age: 25, gender: 'female', label: 'B' },
+  { age: 30, gender: 'male', label: 'B' },
+  { age: 35, gender: 'female', label: 'A' },
+  { age: 40, gender: 'male', label: 'B' },
+  { age: 45, gender: 'female', label: 'A' },
+];
+const tree = new DecisionTree({
+  minSamplesSplit: 2,
+  maxDepth: 2,
+  features: ['age', 'gender'],
+  target: 'label',
+});
+tree.fit(data);
+console.log(tree.predict([{ age: 22, gender
+
+
 </script>
 </body>
 </html>
