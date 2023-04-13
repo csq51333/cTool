@@ -94,7 +94,7 @@
 			display: none;
 		}
 		.item > .toggle {
-			display: none;
+			/*display: none;*/
 			width: 10px;
 			height: 10px;
 			border-radius: 50%;
@@ -102,14 +102,14 @@
 			top: 8px;
 			right: 8px;
 			font-size: 10px;
-			background-color: yellow;
+			background-color: greenYellow;
 			cursor: pointer;
-		}
-		.item:hover .toggle  {
-			display: block;
 		}
 		.item > .toggle:hover {
 			background-color: cyan;
+		}
+		.item:hover .toggle  {
+			display: block;
 		}
 		.treeBox .children {
 			display: flex;
@@ -187,8 +187,46 @@
 		if(childrenDom) {
 			let isHide = childrenDom.style.display == 'none'
 			childrenDom.style.display = isHide ? 'flex' : 'none'
-			currentElement.style.backgroundColor = isHide ? 'yellow' : 'red';
+			currentElement.style.backgroundColor = isHide ? 'greenYellow' : 'red';
 		}
 	}
+</script>
+<script type="text/javascript">
+	const WordTable = ["", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+	function wordToNum(str) {
+		if(!(/^\w+$/.test(str))) return;
+		let idx = str.length - 1
+		let sum = 0
+		for(let i = 0; i < str.length; i++) {
+			let pow = idx - i
+			let num = WordTable.findIndex(item => item == str[i])
+			sum += num * Math.pow(26, pow)
+		}
+		return sum - 1
+	}
+	function conversionProcess(index, process = 26) {
+      let digital = []
+      let No = index + 1
+      const digitalFn = (i) => {
+        let y = i % process != 0 ? i % process : 26
+        digital.unshift(WordTable[y])
+        let Quotient = (i - y) / process
+        return (Quotient > 0) ? digitalFn(Quotient) : digital;
+      }
+      let result = digitalFn(No);
+      return result
+    }
+    const word = 'Z'
+    let result = wordToNum(word)
+	console.log(result)
+	console.log(conversionProcess(result,26))
+	function transTableHeader(str) {
+		let word = str.match(/[A-Z]+/)?.[0]
+		let num = str.match(/\d+/)?.[0]
+		let x = num - 1
+		let y = wordToNum(word)
+		return [x, y]
+	}
+	console.log(transTableHeader('AA2'))
 </script>
 </html>

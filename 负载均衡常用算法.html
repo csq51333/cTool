@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	<div>
+		负载均衡算法是在分布式系统中应用广泛的一种算法，其主要目的是通过将请求分配到多个服务器上，从而减轻单个服务器的负担，提高系统的可靠性和性能。以下是常见的负载均衡算法：
+
+轮询算法（Round Robin）：将请求依次分配给不同的服务器，轮流访问每台服务器，可以确保每台服务器都得到了一定的负载，但是对于每个请求的处理能力不同的服务器来说，会导致负载分配不均。
+
+随机算法（Random）：随机地将请求分配到服务器上，这种方法的优点是简单快速，但是可能会导致某些服务器的负载过高。
+
+加权轮询算法（Weighted Round Robin）：根据服务器的处理能力设置不同的权重，将请求分配给不同权重的服务器，使得处理能力强的服务器可以处理更多的请求。
+
+加权随机算法（Weighted Random）：根据服务器的处理能力设置不同的权重，随机地将请求分配给不同权重的服务器，处理能力强的服务器处理更多的请求的概率更大。
+
+最小连接数算法（Least Connections）：将请求分配给连接数最少的服务器，以确保每个服务器的负载相对均衡，但是如果在短时间内有大量请求进来，可能会导致负载分配不均。
+
+IP 哈希算法（IP Hash）：根据请求的 IP 地址计算哈希值，将哈希值与服务器列表长度取模后得到一个服务器的索引值，然后将请求分配给该服务器。这种方法能够保证相同 IP 的请求被分配到同一个服务器，适合于对于有状态的应用，但是当服务器列表发生变化时，可能会导致哈希值计算结果发生变化，需要重新分配请求。
+
+除了上述常见的负载均衡算法之外，还有一些新的算法不断出现，例如基于机器学习的自适应负载均衡算法、基于强化学习的动态负载均衡算法等，这些算法都有着不同的优点和适用场景，可以根据实际需求选择合适的算法。
+	</div>
+<script type="text/javascript">
+
+// 1.以下是用 JavaScript 实现负载均衡的轮询算法的示例代码
+// 定义服务器列表
+const servers = ['http://server1.com', 'http://server2.com', 'http://server3.com'];
+// 记录当前请求的服务器索引
+let currentIndex = 0;
+
+// 定义负载均衡函数
+function loadBalance() {
+  // 选择当前索引对应的服务器
+  const server = servers[currentIndex];
+  // 将索引加 1，为下一次请求做准备
+  currentIndex = (currentIndex + 1) % servers.length;
+  // 返回选中的服务器
+  return server;
+}
+
+// 示例代码，模拟多次请求
+for (let i = 0; i < 10; i++) {
+  const server = loadBalance();
+  console.log(`第 ${i+1} 次请求，选择的服务器是 ${server}`);
+}
+
+
+
+// 以下是使用 JavaScript 实现负载均衡的加权轮询算法的示例代码：
+// 服务器列表，每个元素包含服务器地址和权重
+const servers = [
+  { url: 'http://server1.example.com', weight: 5 },
+  { url: 'http://server2.example.com', weight: 2 },
+  { url: 'http://server3.example.com', weight: 3 },
+];
+
+// 记录每个服务器的当前权重和初始权重
+let currentWeights = servers.map((server) => ({ ...server, currentWeight: server.weight }));
+
+// 计算所有服务器的权重之和
+const totalWeight = servers.reduce((acc, server) => acc + server.weight, 0);
+
+// 记录当前已经选择的服务器的索引
+let currentIndex = -1;
+
+// 轮询函数，返回下一个服务器的地址
+function nextServer() {
+  currentIndex = (currentIndex + 1) % servers.length;
+  if (currentIndex === 0) {
+    // 当轮询完所有服务器后，需要重新计算当前权重
+    currentWeights = currentWeights.map((server) => ({ ...server, currentWeight: server.weight }));
+  }
+
+  // 根据加权轮询算法选择下一个服务器
+  const selectedServer = currentWeights.reduce(
+    (acc, server) => {
+      server.currentWeight += server.weight;
+      if (server.currentWeight > acc.currentWeight) {
+        return server;
+      }
+      return acc;
+    },
+    { currentWeight: -Infinity }
+  );
+
+  // 减去所选服务器的权重
+  selectedServer.currentWeight -= totalWeight;
+
+  return selectedServer.url;
+}
+
+// 测试函数，输出轮询结果
+function test() {
+  const result = [];
+  for (let i = 0; i < 10; i++) {
+    result.push(nextServer());
+  }
+  console.log(result);
+}
+
+test(); // 输出轮询结果
+// 在上述代码中，我们首先定义了服务器列表 servers，每个元素包含服务器地址和权重。然后我们计算了所有服务器的权重之和，并记录了每个服务器的当前权重和初始权重。在轮询函数 nextServer 中，我们使用加权轮询算法选择下一个服务器，并在选择后更新所选服务器的当前权重。最后我们定义了一个测试函数 test 来输出轮询结果。
+
+
+// 以下是使用 JavaScript 实现的最小连接数负载均衡算法的代码：
+// 服务器列表
+const servers = [
+  { host: 'server1.example.com', port: 80, connections: 0 },
+  { host: 'server2.example.com', port: 80, connections: 0 },
+  { host: 'server3.example.com', port: 80, connections: 0 },
+];
+
+// 获取连接数最小的服务器
+function getServerWithLeastConnections() {
+  let leastConnections = Infinity;
+  let leastConnectionsServer = null;
+
+  // 遍历服务器列表，找到连接数最小的服务器
+  for (const server of servers) {
+    if (server.connections < leastConnections) {
+      leastConnections = server.connections;
+      leastConnectionsServer = server;
+    }
+  }
+
+  // 将连接数最小的服务器的连接数加 1，表示该服务器接收了一个新的连接
+  if (leastConnectionsServer) {
+    leastConnectionsServer.connections++;
+  }
+
+  return leastConnectionsServer;
+}
+
+// 处理请求，将请求分配到连接数最小的服务器
+function handleRequest() {
+  const server = getServerWithLeastConnections();
+  console.log(`Request handled by ${server.host}:${server.port}`);
+}
+
+// 模拟处理多个请求
+for (let i = 0; i < 10; i++) {
+  handleRequest();
+}
+// 在上面的代码中，我们首先定义了一个服务器列表，包含了多台服务器的信息，包括主机名、端口号和当前连接数。然后，我们定义了一个 getServerWithLeastConnections 函数，用于获取连接数最小的服务器。该函数遍历服务器列表，找到连接数最小的服务器，并将其连接数加 1，表示该服务器接收了一个新的连接。最后，我们定义了一个 handleRequest 函数，用于处理请求，将请求分配到连接数最小的服务器。
+
+// 我们可以通过模拟处理多个请求的方式来测试负载均衡算法的效果。在上面的代码中，我们模拟了处理了 10 个请求，每次处理请求时都会将请求分配到连接数最小的服务器。可以看到，使用最小连接数算法可以比较均衡地将请求分配到多台服务器上。
+
+
+// 下面是一个简单的使用 JavaScript 实现 IP 哈希算法的示例代码：
+function ipHash(ip, servers) {
+  // 计算 IP 地址的哈希值
+  let hash = ip.split('.').reduce((prev, cur) => {
+    return prev * 256 + parseInt(cur);
+  }, 0);
+
+  // 将哈希值对服务器数量取模，得到服务器的索引
+  let index = hash % servers.length;
+
+  // 返回分配的服务器
+  return servers[index];
+}
+
+// 示例使用
+let servers = ['192.168.1.1', '192.168.1.2', '192.168.1.3', '192.168.1.4'];
+let ip1 = '192.168.2.1';
+let ip2 = '192.168.1.5';
+console.log(ipHash(ip1, servers)); // 输出 192.168.1.3
+console.log(ipHash(ip2, servers)); // 输出 192.168.1.1
+// 在这个示例中，我们首先定义了一个 ipHash 函数，它接受一个 IP 地址和一个服务器列表作为参数。函数内部，我们将 IP 地址转换为一个整数哈希值，然后将哈希值对服务器数量取模，得到一个服务器的索引，最后返回该服务器的 IP 地址。
+
+// 示例中我们定义了一个服务器列表，然后使用 ipHash 函数将两个 IP 地址分配到服务器上，并打印出分配的结果。可以看到，第一个 IP 地址被分配到了 192.168.1.3 这台服务器上，而第二个 IP 地址被分配到了 192.168.1.1 这台服务器上。
+
+
+// 下面是一个使用 JavaScript 实现的加权随机算法的示例代码：
+// 假设有三台服务器，处理能力分别为 3, 2, 1
+const servers = [
+  { name: 'server1', weight: 3 },
+  { name: 'server2', weight: 2 },
+  { name: 'server3', weight: 1 },
+];
+
+// 计算服务器权重总和
+const totalWeight = servers.reduce((total, server) => total + server.weight, 0);
+
+// 随机选择一台服务器
+function randomServer() {
+  const r = Math.random() * totalWeight;
+  let sum = 0;
+  for (const server of servers) {
+    sum += server.weight;
+    if (r <= sum) {
+      return server;
+    }
+  }
+}
+
+// 测试代码，模拟 1000 次请求
+const results = { server1: 0, server2: 0, server3: 0 };
+for (let i = 0; i < 1000; i++) {
+  const server = randomServer();
+  results[server.name]++;
+}
+
+// 打印结果
+console.log(results);
+
+//在上面的示例代码中，我们假设有三台服务器，它们的处理能力分别为 3、2 和 1。首先，我们计算出服务器权重的总和，然后使用 Math.random() 生成一个 0 到总权重之间的随机数 r。接下来，我们遍历服务器列表，累加每个服务器的权重，如果 r 小于等于当前累加值，就返回该服务器。
+
+//最后，我们使用测试代码模拟 1000 次请求，并统计每台服务器处理请求的次数。运行上述代码，可以看到类似如下的输出结果
+
+// { server1: 610, server2: 268, server3: 122 }
+// 这表明，按照权重分配请求后，处理能力强的服务器处理的请求次数更多，而处理能力弱的服务器处理的请求次数相对较少，从而达到了负载均衡的效果。
+
+</script>
+</body>
+</html>

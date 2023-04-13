@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title></title>
+</head>
+<body>
+	红黑树
+	<code>
+		class Node {
+  constructor(value, color) {
+    this.value = value;
+    this.color = color;
+    this.left = null;
+    this.right = null;
+    this.parent = null;
+  }
+}
+
+class RedBlackTree {
+  constructor() {
+    this.root = null;
+  }
+
+  // 左旋操作
+  leftRotate(node) {
+    const rightNode = node.right;
+    node.right = rightNode.left;
+    if (rightNode.left) {
+      rightNode.left.parent = node;
+    }
+    rightNode.parent = node.parent;
+    if (!node.parent) {
+      this.root = rightNode;
+    } else if (node === node.parent.left) {
+      node.parent.left = rightNode;
+    } else {
+      node.parent.right = rightNode;
+    }
+    rightNode.left = node;
+    node.parent = rightNode;
+  }
+
+  // 右旋操作
+  rightRotate(node) {
+    const leftNode = node.left;
+    node.left = leftNode.right;
+    if (leftNode.right) {
+      leftNode.right.parent = node;
+    }
+    leftNode.parent = node.parent;
+    if (!node.parent) {
+      this.root = leftNode;
+    } else if (node === node.parent.left) {
+      node.parent.left = leftNode;
+    } else {
+      node.parent.right = leftNode;
+    }
+    leftNode.right = node;
+    node.parent = leftNode;
+  }
+
+  // 插入节点
+  insert(value) {
+    const node = new Node(value, 'red');
+    let current = this.root;
+    let parent = null;
+    while (current) {
+      parent = current;
+      if (node.value < current.value) {
+        current = current.left;
+      } else {
+        current = current.right;
+      }
+    }
+    node.parent = parent;
+    if (!parent) {
+      this.root = node;
+    } else if (node.value < parent.value) {
+      parent.left = node;
+    } else {
+      parent.right = node;
+    }
+    this.insertFixup(node);
+  }
+
+  // 插入节点修复
+  insertFixup(node) {
+    while (node.parent && node.parent.color === 'red') {
+      if (node.parent === node.parent.parent.left) {
+        const uncle = node.parent.parent.right;
+        if (uncle && uncle.color === 'red') {
+          node.parent.color = 'black';
+          uncle.color = 'black';
+          node.parent.parent.color = 'red';
+          node = node.parent.parent;
+        } else {
+          if (node === node.parent.right) {
+            node = node.parent;
+            this.leftRotate(node);
+          }
+          node.parent.color = 'black';
+          node.parent.parent.color = 'red';
+          this.rightRotate(node.parent.parent);
+        }
+      } else {
+        const uncle = node.parent.parent.left;
+        if (uncle && uncle.color === 'red') {
+          node.parent.color = 'black';
+          uncle.color = 'black';
+          node.parent.parent.color = 'red';
+          node = node.parent.parent;
+        } else {
+          if (node === node.parent.left) {
+            node = node.parent;
+            this.rightRotate(node);
+          }
+          node.parent.color = 'black';
+          node.parent.parent.color = 'red';
+          this.leftRotate(node.parent.parent);
+        }
+      }
+    }
+    this.root.color = 'black';
+  }
+
+  // 查找节点
+  find(value) {
+    let current = this.root;
+    while (current) {
+      if (value === current.value) {
+        return current;
+      } else if (value < current.value) {
+        current = current.left;
+      } else {
+        current = current.right;
+      }
+    }
+    return null;
+  }
+
+  // 中序遍历
+  inorderTraversal(node = this.root) {
+    if (!node) {
+      return;
+    }
+    this.inorderTraversal(node.left);
+    console.log(node.value);
+    this.inorderTraversal(node.right);
+  }
+}
+
+// 使用例子
+const tree = new RedBlackTree();
+tree.insert(10);
+tree.insert(20);
+tree.insert(30);
+tree.insert(15);
+tree.insert(25);
+tree.inorderTraversal(); // 输出：10 15 20 25 30
+	</code>
+<script type="text/javascript">
+class Node {
+  constructor(value, color) {
+    this.value = value;
+    this.color = color;
+    this.left = null;
+    this.right = null;
+    this.parent = null;
+  }
+}
+
+class RedBlackTree {
+  constructor() {
+    this.root = null;
+  }
+
+  // 左旋操作
+  leftRotate(node) {
+    const rightNode = node.right;
+    node.right = rightNode.left;
+    if (rightNode.left) {
+      rightNode.left.parent = node;
+    }
+    rightNode.parent = node.parent;
+    if (!node.parent) {
+      this.root = rightNode;
+    } else if (node === node.parent.left) {
+      node.parent.left = rightNode;
+    } else {
+      node.parent.right = rightNode;
+    }
+    rightNode.left = node;
+    node.parent = rightNode;
+  }
+
+  // 右旋操作
+  rightRotate(node) {
+    const leftNode = node.left;
+    node.left = leftNode.right;
+    if (leftNode.right) {
+      leftNode.right.parent = node;
+    }
+    leftNode.parent = node.parent;
+    if (!node.parent) {
+      this.root = leftNode;
+    } else if (node === node.parent.left) {
+      node.parent.left = leftNode;
+    } else {
+      node.parent.right = leftNode;
+    }
+    leftNode.right = node;
+    node.parent = leftNode;
+  }
+
+  // 插入节点
+  insert(value) {
+    const node = new Node(value, 'red');
+    let current = this.root;
+    let parent = null;
+    while (current) {
+      parent = current;
+      if (node.value < current.value) {
+        current = current.left;
+      } else {
+        current = current.right;
+      }
+    }
+    node.parent = parent;
+    if (!parent) {
+      this.root = node;
+    } else if (node.value < parent.value) {
+      parent.left = node;
+    } else {
+      parent.right = node;
+    }
+    this.insertFixup(node);
+  }
+
+  // 插入节点修复
+  insertFixup(node) {
+    while (node.parent && node.parent.color === 'red') {
+      if (node.parent === node.parent.parent.left) {
+        const uncle = node.parent.parent.right;
+        if (uncle && uncle.color === 'red') {
+          node.parent.color = 'black';
+          uncle.color = 'black';
+          node.parent.parent.color = 'red';
+          node = node.parent.parent;
+        } else {
+          if (node === node.parent.right) {
+            node = node.parent;
+            this.leftRotate(node);
+          }
+          node.parent.color = 'black';
+          node.parent.parent.color = 'red';
+          this.rightRotate(node.parent.parent);
+        }
+      } else {
+        const uncle = node.parent.parent.left;
+        if (uncle && uncle.color === 'red') {
+          node.parent.color = 'black';
+          uncle.color = 'black';
+          node.parent.parent.color = 'red';
+          node = node.parent.parent;
+        } else {
+          if (node === node.parent.left) {
+            node = node.parent;
+            this.rightRotate(node);
+          }
+          node.parent.color = 'black';
+          node.parent.parent.color = 'red';
+          this.leftRotate(node.parent.parent);
+        }
+      }
+    }
+    this.root.color = 'black';
+  }
+
+  // 查找节点
+  find(value) {
+    let current = this.root;
+    while (current) {
+      if (value === current.value) {
+        return current;
+      } else if (value < current.value) {
+        current = current.left;
+      } else {
+        current = current.right;
+      }
+    }
+    return null;
+  }
+
+  // 中序遍历
+  inorderTraversal(node = this.root) {
+    if (!node) {
+      return;
+    }
+    this.inorderTraversal(node.left);
+    console.log(node.value);
+    this.inorderTraversal(node.right);
+  }
+}
+
+// 使用例子
+const tree = new RedBlackTree();
+tree.insert(10);
+tree.insert(20);
+tree.insert(30);
+tree.insert(15);
+tree.insert(25);
+tree.inorderTraversal(); // 输出：10 15 20 25 30
+
+</script>
+</body>
+</html>

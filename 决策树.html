@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>决策树</title>
+</head>
+<body>
+<div>
+	决策树
+</div>
+<script type="text/javascript">
+// 决策树
+// 决策树是一种常见的机器学习算法，用于分类和回归问题。下面是使用JavaScript实现决策树的示例代码：
+class DecisionTree {
+  constructor(data, target, features) {
+    this.data = data;
+    this.target = target;
+    this.features = features;
+    this.tree = this.buildTree(data, target, features);
+  }
+
+  buildTree(data, target, features) {
+    // 确定终止条件
+    if (this.isHomogeneous(target)) {
+      return { label: target[0] };
+    }
+    if (features.length === 0) {
+      return { label: this.majorityVote(target) };
+    }
+
+    // 选择最佳分裂点
+    const bestFeature = this.getBestFeature(data, target, features);
+    const remainingFeatures = features.filter(feature => feature !== bestFeature);
+    const tree = { feature: bestFeature, children: [] };
+
+    // 根据最佳分裂点创建子节点
+    const featureValues = [...new Set(data.map(row => row[bestFeature]))];
+    for (const value of featureValues) {
+      const subset = data.filter(row => row[bestFeature] === value);
+      const subtree = this.buildTree(subset, subset.map(row => row[target]), remainingFeatures);
+      tree.children.push({ value, subtree });
+    }
+
+    return tree;
+  }
+
+  predict(sample) {
+    let currentNode = this.tree;
+    while (currentNode.children) {
+      const featureValue = sample[currentNode.feature];
+      const childNode = currentNode.children.find(child => child.value === featureValue);
+      currentNode = childNode.subtree;
+    }
+    return currentNode.label;
+  }
+
+  isHomogeneous(array) {
+    return new Set(array).size === 1;
+  }
+
+  majorityVote(array) {
+    const counts = {};
+    for (const item of array) {
+      if (counts[item]) {
+        counts[item]++;
+      } else {
+        counts[item] = 1;
+      }
+    }
+    return Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+  }
+
+  getBestFeature(data, target, features) {
+    let bestFeature;
+    let bestInformationGain = -Infinity;
+    for (const feature of features) {
+      const informationGain = this.calculateInformationGain(data, target, feature);
+      if (informationGain > bestInformationGain) {
+        bestFeature = feature;
+        bestInformationGain = informationGain;
+      }
+    }
+    return bestFeature;
+  }
+
+  calculateInformationGain(data, target, feature) {
+    const featureValues = [...new Set(data.map(row => row[feature]))];
+    const weightedEntropy = featureValues.reduce((sum, value) => {
+      const subset = data.filter(row => row[feature] === value);
+      const subsetTarget = subset.map(row => row[target]);
+      const proportion = subset.length / data.length;
+      return sum + proportion * this.calculateEntropy(subsetTarget);
+    }, 0);
+    return this.calculateEntropy(target) - weightedEntropy;
+  }
+
+  calculateEntropy(array) {
+    const counts = {};
+    for (const item of array) {
+      if (counts[item]) {
+        counts[item]++;
+      } else {
+        counts[item] = 1;
+      }
+    }
+    const proportions = Object.values(counts).map(count => count / array.length);
+    return proportions.reduce((sum, p) => sum - p * Math.log2(p), 0);
+  }
+}
+
+/*上面的代码定义了一个DecisionTree类，构造函数接受三个参数：数据data、目标变量target和特征列表features。使用这三个参数，我们可以通过调用buildTree方法构建一棵决策树。buildTree方法使用递归的方式，首先确定终止条件（数据集中的所有目标变量值都相同或没有可用特征），然后选择最佳分裂点（具有最大信息增益的特征），并创建子节点。最后返回整棵树的根节点。
+
+predict方法接受一个样本sample作为参数，并使用训练好的决策树预测该样本的目标变量值。该方法使用当前节点的特征和子节点的值，沿着树向下遍历，直到到达叶子节点，然后返回叶子节点的目标变量值。
+
+isHomogeneous方法检查数组中的所有元素是否相同，如果是，则说明该数组是同质的。
+
+majorityVote方法接受一个数组作为参数，并返回该数组中出现最频繁的元素。
+
+getBestFeature方法接受数据集、目标变量和特征列表作为参数，并使用信息增益选择最佳分裂点。
+
+calculateInformationGain方法接受数据集、目标变量和特征作为参数，并计算使用该特征分裂时的信息增益。
+
+calculateEntropy方法接受一个数组作为参数，并计算该数组的熵。*/
+
+
+/*由于医疗数据通常属于敏感数据，需要严格保护隐私，因此我们无法提供实际的医疗数据集示例。但是，我们可以提供一个示例代码，用于演示如何使用上面的决策树算法对数据进行分类。
+
+假设我们有一个糖尿病数据集，其中包含了病人的一些特征信息和是否患有糖尿病的标签。我们将使用该数据集来训练一个决策树模型，并使用该模型对新的患者进行预测。
+
+首先，我们需要准备数据集并将其划分为训练集和测试集。以下是一个简单的示例代码：*/
+
+// 导入数据集
+const diabetesData = [
+  [6, 148, 72, 35, 0, 33.6, 0.627, 50, 1],
+  [1, 85, 66, 29, 0, 26.6, 0.351, 31, 0],
+  [8, 183, 64, 0, 0, 23.3, 0.672, 32, 1],
+  // ... 其他样本数据
+];
+
+// 划分训练集和测试集
+const [trainData, testData] = splitData(diabetesData, 0.8);
+
+// 接下来，我们可以使用上面实现的决策树算法训练一个模型，并使用该模型对测试集进行预测。以下是一个示例代码：
+
+// 训练模型
+const features = ['pregnancies', 'glucose', 'bloodPressure', 'skinThickness', 'insulin', 'bmi', 'diabetesPedigreeFunction', 'age'];
+const target = 'diabetes';
+const dt = new DecisionTree(trainData, target, features);
+dt.buildTree();
+
+// 对测试集进行预测
+let correctCount = 0;
+for (const sample of testData) {
+  const predictedLabel = dt.predict(sample);
+  const actualLabel = sample[target];
+  if (predictedLabel === actualLabel) {
+    correctCount++;
+  }
+}
+
+const accuracy = correctCount / testData.length;
+console.log('Accuracy:', accuracy);
+
+
+// 在这个示例中，我们使用了上面实现的DecisionTree类，使用数据集的特征、目标变量和特征列表来创建一个决策树，并使用buildTree方法训练该模型。然后，我们使用predict方法对测试集进行预测，并计算准确率。
+
+// 需要注意的是，这里的准确率仅是一个简单的指标，实际上在医疗领域中，需要更加详细和全面的指标来评估模型的性能，例如召回率、精确率和F1值等指标。
+</script>
+</body>
+</html>
